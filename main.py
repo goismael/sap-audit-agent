@@ -1,22 +1,24 @@
 """
-SAP Audit Agent — Correlator Main
-Entry point for Layer 2: Evidence Correlation.
+SAP Audit Agent — Narrative Engine Main
+Entry point for Layer 3: Audit Narrative Generation.
 
 Run standalone:
-    python -m src.correlator.main
+    python -m src.narrative.main
 
 Or import:
-    from src.correlator.main import run_correlation
-    packages = run_correlation(sap_records, config)
+    from src.narrative.main import run_narrative_generation
+    narratives = run_narrative_generation(packages, config)
 """
 
+import json
 import logging
 import sys
+from pathlib import Path
 from typing import List, Optional
 
 from ..common.config import get_config
-from ..common.models import SAPEvidenceRecord, EvidencePackage
-from .correlator import EvidenceCorrelator, LocalAgentLogSource, LocalApprovalSource
+from ..common.models import EvidencePackage
+from .narrative_engine import NarrativeEngine, AuditNarrative
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,86 +28,101 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def run_correlation(
-    sap_records: List[SAPEvidenceRecord],
+def run_narrative_generation(
+    packages: List[EvidencePackage],
     config: Optional[dict] = None,
-) -> List[EvidencePackage]:
+    skip_human_postings: bool = False,
+) -> List[AuditNarrative]:
     """
-    Run correlation for a batch of SAP evidence records.
+    Generate audit narratives for a batch of evidence packages.
 
     Args:
-        sap_records: Records from Layer 1 collector
+        packages: Correlated evidence packages from Layer 2
         config: Optional config dict
+        skip_human_postings: Skip human-posted documents to reduce API calls
 
     Returns:
-        List of EvidencePackage instances ready for narrative generation
+        List of AuditNarrative instances
     """
     if config is None:
         config = get_config()
 
-    storage_config = config["storage"]
-    local_path = storage_config.get("local_path", "./output/evidence")
-
     logger.info("=" * 60)
-    logger.info("SAP Audit Agent — Correlation Starting")
-    logger.info(f"Records to correlate: {len(sap_records)}")
+    logger.info("SAP Audit Agent — Narrative Generation Starting")
+    logger.info(f"Packages to process: {len(packages)}")
+    logger.info(f"Model: {config['llm']['model']}")
     logger.info("=" * 60)
 
-    # Initialize sources
-    log_source = LocalAgentLogSource(log_path=f"{local_path}/agent_logs")
-    approval_source = LocalApprovalSource(approvals_path=f"{local_path}/approvals")
+    # Initialize narrative engine
+    engine = NarrativeEngine(config["llm"])
 
-    # Initialize correlator
-    correlator = EvidenceCorrelator(
-        log_source=log_source,
-        approval_source=approval_source,
+    # Generate narratives
+    narratives = engine.generate_batch(
+        packages,
+        skip_human_postings=skip_human_postings,
     )
 
-    # Run correlation
-    packages = correlator.correlate_batch(sap_records)
+    # Save narratives to output
+    storage_config = config["storage"]
+    output_path = Path(storage_config.get("local_path", "./output/evidence"))
+    narratives_path = output_path / "narratives"
+    narratives_path.mkdir(parents=True, exist_ok=True)
 
-    # Summary
-    complete = [p for p in packages if p.completeness_score == 100]
-    critical = [
-        p for p in packages
-        if any(g.audit_risk == "Critical" for g in p.gaps)
-    ]
+    from datetime import datetime, timezone
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    output_file = narratives_path / f"narratives_{timestamp}.jsonl"
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        for narrative in narratives:
+            record = {
+                "document_number": narrative.document_number,
+                "company_code": narrative.company_code,
+                "narrative_text": narrative.narrative_text,
+                "completeness_score": narrative.completeness_score,
+                "hash_verified": narrative.hash_verified,
+                "audit_ready": narrative.audit_ready,
+                "has_critical_gaps": narrative.has_critical_gaps,
+                "generated_at": narrative.generated_at,
+                "model_used": narrative.model_used,
+                "generation_time_ms": narrative.generation_time_ms,
+                "gaps": [
+                    {
+                        "gap_type": g.gap_type.value,
+                        "audit_risk": g.audit_risk,
+                        "description": g.description,
+                        "recommended_action": g.recommended_action,
+                    }
+                    for g in narrative.gaps
+                ],
+            }
+            f.write(json.dumps(record) + "\n")
+
+    logger.info(f"Narratives saved: {output_file}")
+
+    # Print summary
+    audit_ready = [n for n in narratives if n.audit_ready]
+    critical = [n for n in narratives if n.has_critical_gaps]
 
     logger.info("=" * 60)
-    logger.info(f"Correlation complete: {len(packages)} packages")
-    logger.info(f"  Complete (100%): {len(complete)}")
-    logger.info(f"  With critical gaps: {len(critical)}")
+    logger.info(f"Narrative generation complete")
+    logger.info(f"  Total generated:      {len(narratives)}")
+    logger.info(f"  Audit ready:          {len(audit_ready)}")
+    logger.info(f"  With critical gaps:   {len(critical)}")
     if critical:
         logger.warning(
-            f"  ATTENTION: {len(critical)} documents have critical audit gaps. "
-            f"Review before audit submission."
+            f"  ATTENTION: {len(critical)} documents require manual review "
+            f"before audit submission."
         )
     logger.info("=" * 60)
 
-    return packages
+    return narratives
 
 
 if __name__ == "__main__":
-    # Standalone run — loads records from evidence store
-    from ..collector.evidence_store import LocalEvidenceStore
-    from pathlib import Path
-
-    cfg = get_config()
-    store = LocalEvidenceStore(
-        cfg["storage"].get("local_path", "./output/evidence")
+    # Standalone — loads packages from correlator output
+    # For full end-to-end, run pipeline.py instead
+    logger.error(
+        "Run src.pipeline instead for end-to-end execution. "
+        "This module requires evidence packages from Layer 2."
     )
-
-    # Load most recent evidence file
-    evidence_path = Path(cfg["storage"].get("local_path", "./output/evidence"))
-    evidence_files = sorted(evidence_path.glob("evidence_*.ndjson"), reverse=True)
-
-    if not evidence_files:
-        logger.error("No evidence files found. Run the collector first.")
-        sys.exit(1)
-
-    latest_file = evidence_files[0]
-    logger.info(f"Loading evidence from {latest_file}")
-    records = store.load_records(str(latest_file))
-
-    packages = run_correlation(records, cfg)
-    logger.info(f"Done. {len(packages)} evidence packages ready for narrative generation.")
+    sys.exit(1)
