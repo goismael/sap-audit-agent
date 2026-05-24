@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP Audit Agent — AI-Powered Audit Preparation for S/4HANA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #0d1117;
+  --ink-2: #3a4250;
+  --ink-3: #8892a0;
+  --surface: #ffffff;
+  --surface-2: #f6f8fa;
+  --surface-3: #edf0f4;
+  --teal: #0d7a6e;
+  --teal-light: #e6f4f2;
+  --teal-mid: #1a9e8f;
+  --amber: #d97706;
+  --red: #b91c1c;
+  --green: #15803d;
+  --border: #e2e8f0;
+  --serif: 'DM Serif Display', serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--surface); color: var(--ink); line-height: 1.6; overflow-x: hidden; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 56px;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-mark {
+  width: 28px; height: 28px; background: var(--teal);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+}
+.nav-logo-mark svg { width: 16px; height: 16px; fill: white; }
+.nav-logo-text { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; }
+.nav-links { display: flex; gap: 1.5rem; list-style: none; }
+.nav-links a { font-size: 13px; color: var(--ink-2); text-decoration: none; transition: color 0.15s; }
+.nav-links a:hover { color: var(--teal); }
+.nav-cta {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  padding: 7px 16px; background: var(--teal); color: white;
+  border-radius: 6px; text-decoration: none; transition: opacity 0.15s;
+  letter-spacing: 0.02em;
+}
+.nav-cta:hover { opacity: 0.85; }
+
+/* ── HERO ── */
+.hero {
+  padding: 120px 2rem 80px;
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+}
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--teal); }
+h1 {
+  font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 400; line-height: 1.12; color: var(--ink);
+  margin-bottom: 1.25rem; letter-spacing: -0.02em;
+}
+h1 em { font-style: italic; color: var(--teal); }
+.hero-desc { font-size: 16px; color: var(--ink-2); line-height: 1.75; margin-bottom: 2rem; max-width: 460px; }
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn-primary {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em; padding: 11px 22px;
+  background: var(--teal); color: white; border-radius: 6px;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-secondary {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em; padding: 11px 22px;
+  background: transparent; color: var(--ink-2);
+  border: 1px solid var(--border); border-radius: 6px;
+  text-decoration: none; transition: border-color 0.15s, color 0.15s;
+}
+.btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
+
+/* ── HERO TERMINAL ── */
+.hero-terminal {
+  background: #0d1117; border-radius: 12px;
+  box-shadow: var(--shadow-lg); overflow: hidden;
+  border: 1px solid #30363d;
+}
+.terminal-bar {
+  background: #161b22; padding: 12px 16px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid #30363d;
+}
+.terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #febc2e; }
+.terminal-dot.green { background: #28c840; }
+.terminal-title { font-family: var(--mono); font-size: 11px; color: #6e7681; margin-left: auto; margin-right: auto; }
+.terminal-body { padding: 1.25rem 1.5rem; font-family: var(--mono); font-size: 12px; line-height: 1.8; }
+.t-dim { color: #6e7681; }
+.t-green { color: #3fb950; }
+.t-teal { color: #39d0c7; }
+.t-amber { color: #e3b341; }
+.t-red { color: #f85149; }
+.t-white { color: #e6edf3; }
+.t-line { display: block; }
+.t-prompt { color: #6e7681; }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  background: var(--surface-2); border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.stats-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 0;
+}
+.stat-item {
+  padding: 2rem;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--serif); font-size: 2.2rem;
+  color: var(--teal); line-height: 1;
+}
+.stat-label { font-size: 12px; color: var(--ink-3); line-height: 1.4; }
+
+/* ── SECTION ── */
+section { padding: 5rem 2rem; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+h2 {
+  font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 400; color: var(--ink); line-height: 1.2;
+  letter-spacing: -0.02em; margin-bottom: 1rem;
+}
+h2 em { font-style: italic; color: var(--teal); }
+
+/* ── HOW IT WORKS ── */
+.how-bg { background: var(--surface-2); }
+.pipeline {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; margin-top: 3rem;
+}
+.pipeline-step {
+  background: var(--surface); padding: 2rem 1.5rem;
+  position: relative; transition: background 0.2s;
+}
+.pipeline-step:hover { background: var(--teal-light); }
+.step-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.1em; color: var(--teal); margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+.step-icon {
+  width: 40px; height: 40px; background: var(--teal-light);
+  border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; margin-bottom: 1rem; font-size: 18px;
+}
+.pipeline-step h3 { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; }
+.pipeline-step p { font-size: 12px; color: var(--ink-2); line-height: 1.6; }
+.step-arrow {
+  position: absolute; right: -12px; top: 50%;
+  transform: translateY(-50%); z-index: 1;
+  width: 24px; height: 24px; background: var(--teal);
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; color: white; font-size: 10px;
+}
+.pipeline-step:last-child .step-arrow { display: none; }
+
+/* ── SCORE DEMO ── */
+.score-demo {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+  align-items: center; margin-top: 3rem;
+}
+.score-circle-wrap { display: flex; justify-content: center; }
+.score-circle {
+  position: relative; width: 200px; height: 200px;
+}
+.score-circle svg { width: 200px; height: 200px; transform: rotate(-90deg); }
+.score-circle circle { fill: none; stroke-width: 12; }
+.score-track { stroke: var(--surface-3); }
+.score-fill {
+  stroke: var(--teal); stroke-linecap: round;
+  stroke-dasharray: 565; stroke-dashoffset: 565;
+  transition: stroke-dashoffset 2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.score-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.score-number {
+  font-family: var(--serif); font-size: 3rem; color: var(--teal);
+  line-height: 1; display: block;
+}
+.score-label { font-family: var(--mono); font-size: 10px; color: var(--ink-3); letter-spacing: 0.08em; }
+.score-details { display: flex; flex-direction: column; gap: 1rem; }
+.score-grade {
+  display: inline-block; font-family: var(--mono); font-size: 13px;
+  font-weight: 500; padding: 6px 14px; border-radius: 20px;
+  background: #dcfce7; color: #15803d; margin-bottom: 0.5rem;
+}
+.score-detail-item { display: flex; align-items: center; gap: 10px; }
+.detail-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.detail-dot.green { background: var(--green); }
+.detail-dot.amber { background: var(--amber); }
+.detail-dot.red { background: var(--red); }
+.detail-text { font-size: 13px; color: var(--ink-2); }
+.detail-count { font-family: var(--mono); font-size: 12px; color: var(--ink-3); margin-left: auto; }
+
+/* ── SAMPLE NARRATIVE ── */
+.narrative-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: var(--shadow); margin-top: 3rem;
+}
+.narrative-header {
+  padding: 1rem 1.5rem; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.narrative-doc { font-family: var(--mono); font-size: 12px; color: var(--ink); font-weight: 500; }
+.badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+}
+.badge-ready { background: #dcfce7; color: #15803d; }
+.badge-critical { background: #fee2e2; color: #b91c1c; }
+.badge-score { background: var(--teal-light); color: var(--teal); }
+.narrative-body { padding: 1.5rem; font-size: 13px; color: var(--ink-2); line-height: 1.8; }
+.narrative-gap {
+  margin-top: 1rem; padding: 0.75rem 1rem;
+  background: #fff7ed; border: 1px solid #fed7aa;
+  border-radius: 6px; font-size: 12px; color: #92400e;
+}
+.narrative-gap strong { color: #b91c1c; }
+
+/* ── LAYERS ── */
+.layers-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 1rem; margin-top: 3rem;
+}
+.layer-card {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 1.5rem; background: var(--surface);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.layer-card:hover { border-color: var(--teal); box-shadow: var(--shadow); }
+.layer-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.1em; color: var(--teal); text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.layer-card h3 { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; }
+.layer-card p { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+.layer-tech {
+  margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 6px;
+}
+.tech-tag {
+  font-family: var(--mono); font-size: 11px; padding: 3px 8px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--ink-3);
+}
+
+/* ── GOVERNANCE LINK ── */
+.governance-banner {
+  background: var(--ink); border-radius: 12px;
+  padding: 3rem; margin-top: 3rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2rem; flex-wrap: wrap;
+}
+.governance-text h3 {
+  font-family: var(--serif); font-size: 1.5rem;
+  color: white; font-weight: 400; margin-bottom: 0.5rem;
+}
+.governance-text p { font-size: 14px; color: #8892a0; line-height: 1.6; }
+.btn-outline {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em; padding: 11px 22px;
+  border: 1px solid rgba(255,255,255,0.2); color: white;
+  border-radius: 6px; text-decoration: none;
+  transition: background 0.15s; white-space: nowrap;
+}
+.btn-outline:hover { background: rgba(255,255,255,0.1); }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border); padding: 2.5rem 2rem;
+}
+.footer-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+.footer-brand { font-family: var(--mono); font-size: 11px; color: var(--ink-3); line-height: 1.6; }
+.footer-brand strong { display: block; color: var(--ink-2); font-weight: 500; margin-bottom: 2px; }
+.footer-links { display: flex; gap: 1.5rem; list-style: none; }
+.footer-links a { font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: var(--teal); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+.fade-up:nth-child(1) { animation-delay: 0.1s; }
+.fade-up:nth-child(2) { animation-delay: 0.2s; }
+.fade-up:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.cursor { animation: blink 1s infinite; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .hero { grid-template-columns: 1fr; gap: 2rem; padding-top: 90px; }
+  .hero-terminal { display: none; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
+  .pipeline { grid-template-columns: 1fr; }
+  .step-arrow { display: none !important; }
+  .score-demo { grid-template-columns: 1fr; }
+  .layers-grid { grid-template-columns: 1fr; }
+  .governance-banner { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 16 16"><path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z"/></svg>
+    </div>
+    <span class="nav-logo-text">SAP Audit Agent</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#demo">Demo output</a></li>
+    <li><a href="#layers">Architecture</a></li>
+  </ul>
+  <a class="nav-cta" href="https://github.com/goismael/sap-audit-agent" target="_blank">View on GitHub</a>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div>
+    <div class="hero-eyebrow fade-up">Open Source · POC</div>
+    <h1 class="fade-up">Audit evidence that <em>explains itself</em></h1>
+    <p class="hero-desc fade-up">
+      An AI agent that continuously collects, correlates, and narrates SAP S/4HANA audit evidence — so when an auditor asks "why did the agent post this?", the answer is already written.
+    </p>
+    <div class="hero-actions fade-up">
+      <a class="btn-primary" href="https://github.com/goismael/sap-audit-agent" target="_blank">View on GitHub</a>
+      <a class="btn-secondary" href="#demo">See sample output</a>
+    </div>
+  </div>
+
+  <div class="hero-terminal fade-up">
+    <div class="terminal-bar">
+      <div class="terminal-dot red"></div>
+      <div class="terminal-dot yellow"></div>
+      <div class="terminal-dot green"></div>
+      <span class="terminal-title">python -m src.pipeline --synthetic</span>
+    </div>
+    <div class="terminal-body">
+      <span class="t-line"><span class="t-green">✓</span> <span class="t-dim">Evidence correlation complete</span></span>
+      <span class="t-line"><span class="t-dim">  3 packages | 2 complete | 1 critical gap</span></span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-teal">→</span> <span class="t-dim">Generating narrative 1/3: doc=100000001</span></span>
+      <span class="t-line"><span class="t-green">✓</span> <span class="t-dim">score=100% audit_ready=True</span></span>
+      <span class="t-line"><span class="t-teal">→</span> <span class="t-dim">Generating narrative 2/3: doc=200000047</span></span>
+      <span class="t-line"><span class="t-amber">⚠</span> <span class="t-dim">score=50% critical_gap=no_approval_record</span></span>
+      <span class="t-line"><span class="t-teal">→</span> <span class="t-dim">Generating narrative 3/3: doc=100000002</span></span>
+      <span class="t-line"><span class="t-green">✓</span> <span class="t-dim">score=100% audit_ready=True</span></span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-white">AUDIT READINESS REPORT</span></span>
+      <span class="t-line"><span class="t-dim">Score:  </span><span class="t-teal">68/100</span></span>
+      <span class="t-line"><span class="t-dim">Grade:  </span><span class="t-amber">C — Moderate Remediation Required</span></span>
+      <span class="t-line"><span class="t-dim">Saved:  </span><span class="t-green">audit_report_2026Q1.md</span></span>
+      <span class="t-line"><span class="t-dim">        </span><span class="t-green">audit_report_2026Q1.json</span><span class="cursor t-dim">▌</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">Pipeline layers<br>end-to-end</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">&lt;20s</span>
+      <span class="stat-label">Full pipeline runtime<br>on synthetic data</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">0</span>
+      <span class="stat-label">Vendor dependencies<br>open architecture</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">SOX</span>
+      <span class="stat-label">Compliance-grade<br>evidence chain</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how-bg" id="how">
+  <div class="section-inner">
+    <div class="section-label">How it works</div>
+    <h2>Four layers. One <em>complete</em> audit trail.</h2>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">Layer 01</div>
+        <div class="step-icon">📡</div>
+        <h3>SAP Data Collector</h3>
+        <p>Pulls journal entries, change documents, and posting period data from SAP S/4HANA via supported OData APIs. Delta queries only — no bulk extraction.</p>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">Layer 02</div>
+        <div class="step-icon">🔗</div>
+        <h3>Evidence Correlator</h3>
+        <p>Joins SAP events with agent action logs, reasoning logs, and approval records. Detects gaps, verifies hash chains, scores completeness 0–100%.</p>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">Layer 03</div>
+        <div class="step-icon">✍️</div>
+        <h3>Narrative Engine</h3>
+        <p>Gemini 2.5 Flash reads each evidence package and generates a plain-language audit narrative — answering why the agent acted, not just what it did.</p>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">Layer 04</div>
+        <div class="step-icon">📊</div>
+        <h3>Report Generator</h3>
+        <p>Produces a scored, graded period audit readiness report — Markdown for humans, JSON for systems. Score A through D. Critical items flagged for immediate action.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SCORE DEMO ── -->
+<section id="demo">
+  <div class="section-inner">
+    <div class="section-label">Sample output</div>
+    <h2>A score. A grade. A <em>clear path forward.</em></h2>
+
+    <div class="score-demo">
+      <div class="score-circle-wrap">
+        <div class="score-circle" id="scoreCircle">
+          <svg viewBox="0 0 200 200">
+            <circle class="score-track" cx="100" cy="100" r="90"/>
+            <circle class="score-fill" id="scoreFill" cx="100" cy="100" r="90"/>
+          </svg>
+          <div class="score-center">
+            <span class="score-number" id="scoreNum">0</span>
+            <span class="score-label">/ 100</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-details">
+        <div>
+          <span class="score-grade">C — Moderate Remediation Required</span>
+          <p style="font-size:13px;color:var(--ink-2);margin-top:0.75rem;line-height:1.7;">
+            This score reflects a close cycle with one critical evidence gap — a missing approval record on a Tier 3 posting. Two of three documents are fully audit-ready with complete evidence chains.
+          </p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;">
+          <div class="score-detail-item">
+            <div class="detail-dot green"></div>
+            <span class="detail-text">Document 100000001 — Complete</span>
+            <span class="detail-count">100%</span>
+          </div>
+          <div class="score-detail-item">
+            <div class="detail-dot red"></div>
+            <span class="detail-text">Document 200000047 — Critical Gap</span>
+            <span class="detail-count">50%</span>
+          </div>
+          <div class="score-detail-item">
+            <div class="detail-dot green"></div>
+            <span class="detail-text">Document 100000002 — Human Posted</span>
+            <span class="detail-count">100%</span>
+          </div>
+        </div>
+
+        <div style="padding:1rem;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);">
+          <p style="font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.5rem;">Scoring formula</p>
+          <p style="font-size:12px;color:var(--ink-2);line-height:1.6;">Audit ready % (80pts) + Hash verified % (20pts) − Critical gap penalty (5pts each)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sample narrative -->
+    <div class="narrative-card" style="margin-top:3rem;">
+      <div style="padding:1rem 1.5rem;background:var(--surface-2);border-bottom:1px solid var(--border);">
+        <p style="font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:0.1em;text-transform:uppercase;">Sample generated narrative — Document 100000001</p>
+      </div>
+      <div class="narrative-header">
+        <span class="narrative-doc">100000001 / CC 1000</span>
+        <span class="badge badge-ready">✓ Audit Ready</span>
+        <span class="badge badge-score">100% Complete</span>
+        <span class="badge" style="background:var(--surface-3);color:var(--ink-3);">Hash Verified</span>
+      </div>
+      <div class="narrative-body">
+        On 2026-04-30, SAP financial document 100000001 was posted in Company Code 1000 for GL Account 400000, recording USD 184,200.00 under document type SA as part of the Q1 2026 period-end close.
+        <br><br>
+        The posting was executed by AI agent <code style="font-family:var(--mono);font-size:11px;background:var(--surface-2);padding:1px 6px;border-radius:3px;">gl-reconciliation-agent-001</code> (executor classification) via <code style="font-family:var(--mono);font-size:11px;background:var(--surface-2);padding:1px 6px;border-radius:3px;">BAPI_ACC_DOCUMENT_POST</code> under session <code style="font-family:var(--mono);font-size:11px;background:var(--surface-2);padding:1px 6px;border-radius:3px;">close-cycle-2026-04-Q1-001</code>. The agent's permission check passed, confirming the action was within its declared authorization scope.
+        <br><br>
+        Prior to posting, the agent assessed the period-close accrual. It analyzed the GL balance (USD 184,200.00) against the sub-ledger balance, confirming an exact match with zero variance. Two alternatives were considered and rejected: flagging for manual review (no discrepancy warranted) and escalating to the Controller (tolerance thresholds not exceeded). The agent concluded with high confidence that posting the accrual was the correct action.
+        <br><br>
+        The posting was authorized by <strong>Maria Santos (Controller)</strong> at 23:31 UTC via Microsoft Teams adaptive card. The authorization hash was verified against the exact posting parameters — no parameter changes occurred between authorization and execution.
+        <br><br>
+        <em>Evidence completeness: 100%. All four evidence layers present and verified: SAP posting record, agent action log, agent reasoning log, and human approval record with hash verification.</em>
+      </div>
+    </div>
+
+    <!-- Critical gap narrative -->
+    <div class="narrative-card" style="margin-top:1rem;">
+      <div class="narrative-header">
+        <span class="narrative-doc">200000047 / CC 2000</span>
+        <span class="badge badge-critical">⚠ Review Required</span>
+        <span class="badge badge-score" style="background:#fff7ed;color:#92400e;">50% Complete</span>
+      </div>
+      <div class="narrative-body">
+        SAP financial document 200000047 was posted in Company Code 2000 on 2026-04-30 for EUR 52,000.00 to GL Account 410000 (Intercompany Accrual). The posting was executed by agent service user <code style="font-family:var(--mono);font-size:11px;background:var(--surface-2);padding:1px 6px;border-radius:3px;">SVC_AGENT_EXEC_POST</code>.
+        <br><br>
+        <strong>Evidence is incomplete.</strong> While the SAP posting record and agent action log are present, no approval record was located for this document. This posting was classified as a Tier 3 (approve) action, which requires human authorization before execution. The absence of an approval record may represent a SOX internal control failure.
+        <div class="narrative-gap">
+          <strong>AUDIT ATTENTION REQUIRED</strong> — Critical gap: <code style="font-family:var(--mono);font-size:11px;">no_approval_record</code><br>
+          Locate the approval record in the approval store by session_id. If not found, this posting may represent a SOX control failure — escalate to internal audit immediately.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARCHITECTURE ── -->
+<section class="how-bg" id="layers">
+  <div class="section-inner">
+    <div class="section-label">Architecture</div>
+    <h2>Built on the <em>governance patterns</em> library.</h2>
+    <p style="font-size:15px;color:var(--ink-2);max-width:580px;line-height:1.75;margin-top:0.5rem;">
+      Each layer of the audit agent is a direct application of the SAP Agent Governance Patterns — P001 through P004 are not just referenced, they are the evidence sources this product reads.
+    </p>
+
+    <div class="layers-grid">
+      <div class="layer-card">
+        <div class="layer-num">Layer 01 — SAP Data Collector</div>
+        <h3>OData-only SAP integration</h3>
+        <p>Collects journal entries, change documents, and posting period data using only supported SAP API pathways. Delta queries via LastChangeDateTime. Identifies agent-posted documents by matching service users against the P001 registry.</p>
+        <div class="layer-tech">
+          <span class="tech-tag">OData v2</span>
+          <span class="tech-tag">API_JOURNALENTRYITEMBASIC_SRV</span>
+          <span class="tech-tag">Delta queries</span>
+          <span class="tech-tag">P001</span>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-num">Layer 02 — Evidence Correlator</div>
+        <h3>Four-way join with gap detection</h3>
+        <p>Joins SAP events with P003 agent action logs, P003 reasoning logs, and P002 approval records via session_id. Hash chain verification. Completeness scoring. Gap classification with audit risk levels.</p>
+        <div class="layer-tech">
+          <span class="tech-tag">P002 Approvals</span>
+          <span class="tech-tag">P003 Logs</span>
+          <span class="tech-tag">Hash verification</span>
+          <span class="tech-tag">Gap detection</span>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-num">Layer 03 — Narrative Engine</div>
+        <h3>Gemini-powered audit narratives</h3>
+        <p>Uses Google Gemini 2.5 Flash via Langchain to generate plain-language audit narratives from structured evidence packages. Two prompt templates — full agent narrative and brief human-posting confirmation.</p>
+        <div class="layer-tech">
+          <span class="tech-tag">Gemini 2.5 Flash</span>
+          <span class="tech-tag">Langchain</span>
+          <span class="tech-tag">SOX-grade prompts</span>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-num">Layer 04 — Report Generator</div>
+        <h3>Scored, graded period report</h3>
+        <p>Produces a complete period audit readiness report with executive summary, statistics table, critical items section, and all narratives. Audit readiness score A–D. Saves as Markdown and JSON.</p>
+        <div class="layer-tech">
+          <span class="tech-tag">Markdown + JSON</span>
+          <span class="tech-tag">A–D grading</span>
+          <span class="tech-tag">Critical item flagging</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Governance banner -->
+    <div class="governance-banner">
+      <div class="governance-text">
+        <h3>Built on SAP Agent Governance Patterns</h3>
+        <p>P001–P004 define the permission scoping, approval gates, audit logging, and failure handling that this product reads as its primary evidence sources. Start with the patterns before building the product.</p>
+      </div>
+      <a class="btn-outline" href="https://goismael.github.io/sap-agent-governance" target="_blank">View Pattern Library →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>SAP Audit Agent</strong>
+      Open source · MIT License · POC stage
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/goismael/sap-audit-agent" target="_blank">GitHub</a></li>
+      <li><a href="https://goismael.github.io/sap-agent-governance" target="_blank">Governance Patterns</a></li>
+      <li><a href="#how">How it works</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+// Animate score circle on scroll
+const scoreEl = document.getElementById('scoreNum');
+const fillEl = document.getElementById('scoreFill');
+const TARGET = 68;
+const CIRCUMFERENCE = 565;
+
+function animateScore() {
+  let current = 0;
+  const duration = 2000;
+  const start = performance.now();
+
+  function step(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    current = Math.round(TARGET * ease);
+    scoreEl.textContent = current;
+    fillEl.style.strokeDashoffset = CIRCUMFERENCE - (CIRCUMFERENCE * current / 100);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// Trigger on scroll into view
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      animateScore();
+      observer.disconnect();
+    }
+  });
+}, { threshold: 0.3 });
+
+observer.observe(document.getElementById('scoreCircle'));
+
+// Terminal typewriter effect
+const lines = document.querySelectorAll('.t-line');
+lines.forEach((line, i) => {
+  line.style.opacity = '0';
+  setTimeout(() => {
+    line.style.transition = 'opacity 0.3s';
+    line.style.opacity = '1';
+  }, 300 + i * 120);
+});
+</script>
+</body>
+</html>
