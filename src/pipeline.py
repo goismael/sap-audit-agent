@@ -30,6 +30,7 @@ from .correlator.correlator import (
 )
 from .narrative.main import run_narrative_generation
 from .narrative.narrative_engine import AuditNarrative
+from .reporter.report_generator import ReportGenerator
 
 logging.basicConfig(
     level=logging.INFO,
@@ -359,6 +360,30 @@ def run_pipeline(synthetic: bool = False) -> List[AuditNarrative]:
 
     # Print to console
     print_narratives(narratives)
+
+    # Layer 4 — Report Generation
+    logger.info("Generating audit readiness report...")
+    generator = ReportGenerator()
+    report = generator.generate(
+        narratives=narratives,
+        close_cycle="close-cycle-2026-04-Q1-001" if synthetic else "live-close",
+        company_codes=config["collection"]["company_codes"],
+        period="04",
+        fiscal_year=config["collection"]["fiscal_year"],
+    )
+
+    reports_path = str(Path(
+        config["storage"].get("local_path", "./output/evidence")
+    ) / "reports")
+    saved = generator.save(report, reports_path)
+
+    print(f"\n{'=' * 60}")
+    print(f"AUDIT READINESS REPORT")
+    print(f"{'=' * 60}")
+    print(f"Score:    {report.summary.audit_readiness_score}/100")
+    print(f"Grade:    {report.summary.readiness_grade}")
+    print(f"Saved to: {saved['markdown']}")
+    print(f"{'=' * 60}\n")
 
     return narratives
 
