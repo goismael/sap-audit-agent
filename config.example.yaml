@@ -1,0 +1,60 @@
+# SAP Audit Agent — Configuration
+# Copy this file to config.yaml and fill in your values
+# NEVER commit config.yaml to version control
+
+sap:
+  # SAP S/4HANA connection
+  base_url: "https://your-sap-system.example.com"
+  client: "100"
+  username: "SVC_AUDIT_AGENT"        # Service user — read-only, type S
+  password: "${SAP_PASSWORD}"         # From environment variable
+  # OData service paths
+  journal_entry_service: "/sap/opu/odata/sap/API_JOURNALENTRYITEMBASIC_SRV"
+  gl_account_service: "/sap/opu/odata/sap/API_GLACCOUNT_DOCUMENT_SRV"
+  exchange_rate_service: "/sap/opu/odata/sap/API_EXCHANGERATE_SRV"
+  fiscal_year_service: "/sap/opu/odata/sap/API_FISCALYEAR_SRV"
+  # Request settings
+  page_size: 1000
+  timeout_seconds: 30
+  max_retries: 3
+
+collection:
+  # Company codes to monitor
+  company_codes:
+    - "1000"
+    - "2000"
+    - "3000"
+    - "4000"
+  # Fiscal year and period
+  fiscal_year: "2026"
+  # Collection mode: "delta" or "full"
+  mode: "delta"
+  # Delta collection: how far back to look on first run (days)
+  initial_lookback_days: 30
+  # Known agent service users (from P001)
+  agent_service_users:
+    - "SVC_AGENT_READER_GL"
+    - "SVC_AGENT_READER_AP"
+    - "SVC_AGENT_EXEC_POST"
+
+llm:
+  # Google Gemini configuration
+  model: "gemini-2.5-flash"
+  api_key: "${GEMINI_API_KEY}"        # From environment variable
+  temperature: 0.1                    # Low temperature for consistent audit narratives
+  max_output_tokens: 1024
+
+storage:
+  # Where to store collected evidence
+  # For POC: local JSON files
+  # For production: Azure Monitor Log Analytics
+  mode: "local"                       # "local" or "azure"
+  local_path: "./output/evidence"
+  # Azure Monitor settings (production)
+  azure_workspace_id: "${AZURE_WORKSPACE_ID}"
+  azure_shared_key: "${AZURE_SHARED_KEY}"
+
+logging:
+  level: "INFO"                       # DEBUG, INFO, WARNING, ERROR
+  format: "json"                      # "json" or "text"
+  output: "stdout"                    # "stdout" or file path
