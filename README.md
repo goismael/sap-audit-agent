@@ -2,7 +2,7 @@
 
 **An AI agent that continuously collects, correlates, and narrates SAP S/4HANA audit evidence — built for financial close governance.**
 
-🌐 **[Live Demo Site](https://goismael.github.io/sap-audit-agent)** · 📚 **[Governance Pattern Library](https://goismael.github.io/sap-agent-governance)**
+🚀 **[Try the Live Demo](https://huggingface.co/spaces/LuckyIsmael/sap-audit-agent-demo)** · 🌐 **[Product Website](https://goismael.github.io/sap-audit-agent)** · 📚 **[Governance Pattern Library](https://goismael.github.io/sap-agent-governance)**
 
 ---
 
