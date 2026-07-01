@@ -101,6 +101,7 @@ This product is the practical application of the **[SAP Agent Governance Pattern
 | **P002** — Approval Gates | Source of approval records and hash-verified authorization chain |
 | **P003** — Audit Logging | Source of agent action and reasoning logs |
 | **P004** — Failure Handling | Recovery events included in audit narratives |
+| P005 — Deterministic Replay | Policy version binding enables audit-time decision replay |
 
 ---
 
